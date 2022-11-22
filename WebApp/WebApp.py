@@ -41,7 +41,7 @@ async def getTopStoresForMonth(request):
     pool = request.app['pool']
     async with pool.acquire() as connection:
         async with connection.transaction():
-            result = await connection.fetch('SELECT st.id, st.address, sum(coalesce(i.price,0)) FROM store st LEFT OUTER JOIN sales s ON s.store_id = st.id LEFT OUTER JOIN item i ON s.item_id = i.id GROUP BY st.id, st.address ORDER BY sum(coalesce(i.price,0)) DESC fetch first 10 rows only')
+            result = await connection.fetch('SELECT st.id, st.address, sum(coalesce(i.price,0)) FROM store st LEFT OUTER JOIN sales s ON s.store_id = st.id LEFT OUTER JOIN item i ON s.item_id = i.id WHERE s.sale_time >= (current_date - interval /'1 month/') GROUP BY st.id, st.address ORDER BY sum(coalesce(i.price,0)) DESC fetch first 10 rows only')
             result_as_dict: List[Dict] = [dict(item) for item in result]
             return web.json_response(result_as_dict)
 
